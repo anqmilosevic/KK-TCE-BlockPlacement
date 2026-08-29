@@ -18,6 +18,14 @@ Place `KKProject` in `llvm/lib/Transforms` and add the following line to `llvm/l
 add_subdirectory(KKProject)
 ```
 
+## Build
+
+Place the project in `llvm/lib/Transforms` under the name `KKProject` and add the following line to `llvm/lib/Transforms/CMakeLists.txt`:
+
+```cmake
+add_subdirectory(KKProject)
+```
+
 Build the plugin from the LLVM build directory:
 
 ```bash
