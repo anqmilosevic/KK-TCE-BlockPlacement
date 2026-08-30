@@ -1,6 +1,6 @@
 # LLVM Tail Call Elimination & Block Placement Passes
 
-LLVM legacy pass plugin implementing Tail Call Elimination and Block Placement. Tail call elimination replaces self-recursive calls in tail position with a jump back to the top of the function, so the recursion runs in constant stack space. Block placement reorders the basic blocks of a function so that the most likely path is contiguous, moves cold blocks to the end and inverts conditional branches so that the hot successor becomes the fall-through. The combined pass runs tail call elimination and then block placement, in that order, since tail call elimination creates the loop that block placement lays out.
+LLVM legacy pass plugin implementing Tail Call Elimination and Block Placement. Tail call elimination replaces self-recursive calls in tail position with a jump back to the top of the function, so the recursion runs in constant stack space. Block placement reorders the basic blocks of a function so that the most likely path is contiguous, moves cold blocks to the end and inverts conditional branches so that the hot successor becomes the fall-through. A branch on a comparison is inverted by flipping the predicate; any other condition, such as a plain `bool`, is negated instead. The combined pass runs tail call elimination and then block placement, in that order, since tail call elimination creates the loop that block placement lays out.
 
 ## Requirements
 
@@ -75,6 +75,7 @@ On LLVM releases where `opt` no longer accepts `-enable-new-pm=0`, the passes ar
 
 ## Examples
 
-Examples are in `Examples`, each with the source file, the input IR and the output IR. `tail_call.c` contains a tail recursive function, a function with two tail calls, a tail recursive `void` function and a function that is not tail recursive and is therefore left untouched. `deep_recursion.c` recurses one million levels deep: without the pass the program overflows the stack, after the pass it runs in constant stack space. `block_placement.c` contains a cold block, a loop and both combined. `combined.c` is a tail recursive function whose new loop is then laid out by block placement.
+Examples are in `Examples`, each with the source file, the input IR and the output IR. `tail_call.c` contains a tail recursive function, a function with two tail calls, a tail recursive `void` function and a function that is not tail recursive and is therefore left untouched. `deep_recursion.c` recurses one million levels deep: without the pass the program overflows the stack, after the pass it runs in constant stack space. `block_placement.c` contains a cold block, a loop, both combined, and a branch on a plain `bool`. `combined.c` is a tail recursive function whose new loop is then laid out by block placement.
 
-Tail call elimination handles direct recursion only, and gives up when the address of a local variable escapes the function, when an `alloca` appears outside the entry block, or when a parameter is not kept in an `alloca` at all. Block placement relies on static heuristics, without profile information.
+
+Tail call elimination handles direct recursion only, and gives up when the address of a local variable escapes the function, when an `alloca` appears outside the entry block, or when a parameter is not kept in an `alloca` at all. Block placement relies on static heuristics, without profile information. Flipping a comparison in place is only done when nothing else uses it; otherwise the condition is negated with an extra instruction.
